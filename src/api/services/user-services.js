@@ -20,11 +20,20 @@ const getUserByEmail = async (email, select = "") => {
 
 const getUserBySessionToken = async (sessionToken, select = "") => {
   try {
-    const user = await UserModel.find({
+    let user = await UserModel.find({
       "authentication.sessionToken": sessionToken,
     })
       .select(select)
       .exec();
+
+    if (!user) {
+      user = await UserModel.find({
+        "google.id": sessionToken,
+      })
+        .select(select)
+        .exec();
+    }
+
     return user;
   } catch (error) {
     console.log(error);

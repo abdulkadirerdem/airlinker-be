@@ -8,7 +8,20 @@ const authentication = (salt, password) => {
     .digest("hex");
 };
 
+const getSessionToken = (req) => {
+  let sessionToken;
+  if (process.env.NODE_ENV === "production") {
+    const authHeader = req.headers["authorization"];
+    sessionToken = authHeader && authHeader.split(" ")[1];
+  } else {
+    sessionToken = req.cookies["COOKIE-KEY"];
+  }
+
+  return sessionToken;
+};
+
 module.exports = {
   random,
   authentication,
+  getSessionToken,
 };
