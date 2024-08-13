@@ -15,6 +15,11 @@ const FormSchema = new mongoose.Schema({
   description: { type: String, required: true },
   questions: [QuestionSchema],
   responses: [ResponseSchema], // Birden fazla yanıt olabilir
+  airlink: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Airlink",
+    required: true,
+  },
 });
 
 const FormModel = mongoose.model("Form", FormSchema);

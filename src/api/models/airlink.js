@@ -5,6 +5,11 @@ const AirlinkSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String, required: true },
   form: { type: mongoose.Schema.Types.ObjectId, ref: "Form" },
+  workspace: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Workspace",
+    required: true,
+  },
 });
 
 const AirlinkModel = mongoose.model("Airlink", AirlinkSchema);
