@@ -39,27 +39,27 @@ module.exports = (router) => {
         sameSite: "strict", // CSRF saldırılarına karşı korur
       });
 
-      res.redirect("https://localhost:8083/dashboard");
+      res.redirect("http://localhost:8083/dashboard");
     }
   );
 
   router.get("/auth/logout", (req, res) => {
-    req.logout(() => {
+    req.logout(async () => {
       // COOKIE-KEY'i sil
-      res.clearCookie("COOKIE-KEY", {
+      await res.clearCookie("COOKIE-KEY", {
         httpOnly: false,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
       });
 
       // Passport'un oluşturduğu connect.sid cookie'sini de sil
-      res.clearCookie("connect.sid", {
-        httpOnly: true,
+      await res.clearCookie("connect.sid", {
+        httpOnly: false,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
       });
 
-      res.redirect("https://localhost:8083/");
+      res.redirect("http://localhost:8083/auth/login");
     });
   });
 };
