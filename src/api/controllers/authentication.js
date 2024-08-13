@@ -1,5 +1,5 @@
 const { getUserByEmail, createUser } = require("../services/user-services");
-const { random, authentication } = require("../helpers");
+const { random, authentication, getSessionToken } = require("../helpers");
 const { getUserBySessionToken } = require("../services/user-services");
 
 const login = async (req, res) => {
@@ -88,8 +88,7 @@ const register = async (req, res) => {
 
 const me = async (req, res) => {
   try {
-    const authHeader = req.headers["authorization"];
-    const sessionToken = authHeader && authHeader.split(" ")[1]; // Extract token from Bearer scheme
+    const sessionToken = await getSessionToken(req);
 
     if (!sessionToken) {
       return res.sendStatus(403);
