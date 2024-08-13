@@ -6,7 +6,6 @@ const {
   getProductsByUserId,
 } = require("../services/product-services");
 
-// Yeni ürün oluşturma
 const createNewProduct = async (req, res) => {
   const { id } = req.params;
   const { productUrl, trackingStatus } = req.body;
@@ -22,7 +21,6 @@ const createNewProduct = async (req, res) => {
   }
 };
 
-// Ürün güncelleme
 const updateExistingProduct = async (req, res) => {
   const { productId } = req.params;
   const updatedFields = req.body;
@@ -43,7 +41,6 @@ const updateExistingProduct = async (req, res) => {
   }
 };
 
-// Ürün silme
 const deleteExistingProduct = async (req, res) => {
   const { productId } = req.params;
   try {

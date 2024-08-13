@@ -2,7 +2,6 @@ const { getSessionToken } = require("../helpers");
 const { WorkspaceModel } = require("../models/workspace");
 const { getUserBySessionToken } = require("../services/user-services");
 
-// Workspace oluşturma
 const createWorkspace = async (req, res) => {
   const sessionToken = getSessionToken(req);
   const user = await getUserBySessionToken(sessionToken);
@@ -15,7 +14,7 @@ const createWorkspace = async (req, res) => {
   try {
     const workspace = new WorkspaceModel({
       ...req.body,
-      user: user[0]._id, // Kullanıcının ID'sini workspace'e ekleyin
+      user: user[0]._id,
     });
     await workspace.save();
     res.status(201).json(workspace);
@@ -24,7 +23,6 @@ const createWorkspace = async (req, res) => {
   }
 };
 
-// Kullanıcının workspace'lerini getirme
 const getWorkspaces = async (req, res) => {
   const sessionToken = getSessionToken(req);
   const user = await getUserBySessionToken(sessionToken);

@@ -13,12 +13,11 @@ const createAirlink = async (req, res) => {
 
     const airlink = new AirlinkModel({
       ...req.body,
-      workspace: workspaceId, // Workspace'e bağlıyoruz
+      workspace: workspaceId,
     });
 
     await airlink.save();
 
-    // Workspace'e airlink'i ekleyelim
     workspace.airlinks.push(airlink._id);
     await workspace.save();
 
