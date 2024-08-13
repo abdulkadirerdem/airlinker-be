@@ -1,9 +1,26 @@
 const { AirlinkModel } = require("../models/airlink");
+const { WorkspaceModel } = require("../models/workspace");
 
 const createAirlink = async (req, res) => {
   try {
-    const airlink = new AirlinkModel(req.body);
+    const { workspace: workspaceId } = req.body;
+
+    const workspace = await WorkspaceModel.findById(workspaceId);
+
+    if (!workspace) {
+      return res.status(404).json({ message: "Workspace not found" });
+    }
+
+    const airlink = new AirlinkModel({
+      ...req.body,
+      workspace: workspaceId,
+    });
+
     await airlink.save();
+
+    workspace.airlinks.push(airlink._id);
+    await workspace.save();
+
     res.status(201).json(airlink);
   } catch (error) {
     res.status(400).json({ error: error.message });

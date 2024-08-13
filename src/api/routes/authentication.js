@@ -20,18 +20,15 @@ module.exports = (router) => {
       failureRedirect: "https://localhost:8083/",
     }),
     async (req, res) => {
-      const user = req.user; // Passport tarafından oturum açmış kullanıcı
+      const user = req.user;
       const salt = random();
 
-      // Google ile kimlik doğrulama yapıldığında sessionToken oluşturma
       const sessionToken = authentication(salt, user._id.toString());
 
-      // Kullanıcı veritabanında sessionToken güncellemesi
       await updateUserById(user._id, {
         "authentication.sessionToken": sessionToken,
       });
 
-      // `COOKIE-KEY` cookie'sini set etme
       res.cookie("COOKIE-KEY", sessionToken, {
         httpOnly: false, // JavaScript ile okunamaz, XSS saldırılarına karşı korur
         secure: process.env.NODE_ENV === "production", // Sadece HTTPS üzerinde gönderilir
@@ -45,14 +42,12 @@ module.exports = (router) => {
 
   router.get("/auth/logout", (req, res) => {
     req.logout(async () => {
-      // COOKIE-KEY'i sil
       await res.clearCookie("COOKIE-KEY", {
         httpOnly: false,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
       });
 
-      // Passport'un oluşturduğu connect.sid cookie'sini de sil
       await res.clearCookie("connect.sid", {
         httpOnly: false,
         secure: process.env.NODE_ENV === "production",
