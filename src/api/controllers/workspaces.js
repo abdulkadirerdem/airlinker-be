@@ -28,7 +28,7 @@ const getWorkspaces = async (req, res) => {
   const user = await getUserBySessionToken(sessionToken);
 
   if (!user || user?.length === 0) {
-    res.status(400).json({ error: error.message });
+    res.status(400).json({ error: "User not found!" });
   }
 
   try {

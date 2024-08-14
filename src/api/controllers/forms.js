@@ -47,9 +47,20 @@ const submitResponse = async (req, res) => {
     const { id } = req.params;
     const response = req.body;
     const form = await FormModel.findById(id);
+
     if (!form) return res.status(404).json({ error: "Form not found" });
 
-    form.responses.push(response);
+    const responseArr = [];
+
+    for (const [key, value] of Object.entries(response)) {
+      responseArr.push({ questionId: key, answer: value });
+    }
+
+    console.log(responseArr);
+
+    const reponseModel = { answers: responseArr };
+
+    form.responses.push(reponseModel);
     await form.save();
     res.status(201).json(form);
   } catch (error) {

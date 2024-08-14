@@ -36,4 +36,17 @@ const getAirlinks = async (req, res) => {
   }
 };
 
-module.exports = { createAirlink, getAirlinks };
+const getAirlinksByWorkstation = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const airlinks = await AirlinkModel.find({ workspace: id }).populate(
+      "form"
+    );
+    res.status(200).json(airlinks);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+module.exports = { createAirlink, getAirlinks, getAirlinksByWorkstation };
