@@ -56,8 +56,6 @@ const submitResponse = async (req, res) => {
       responseArr.push({ questionId: key, answer: value });
     }
 
-    console.log(responseArr);
-
     const reponseModel = { answers: responseArr };
 
     form.responses.push(reponseModel);
