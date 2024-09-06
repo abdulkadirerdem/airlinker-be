@@ -2,8 +2,7 @@ const { UserModel } = require("../models/users");
 
 const getUsers = async (select = "") => {
   try {
-    const users = await UserModel.find().select(select).exec();
-    return users;
+    return await UserModel.find().select(select).exec();
   } catch (error) {
     console.log(error);
   }
@@ -11,30 +10,7 @@ const getUsers = async (select = "") => {
 
 const getUserByEmail = async (email, select = "") => {
   try {
-    const user = await UserModel.findOne({ email }).select(select).exec();
-    return user;
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-const getUserBySessionToken = async (sessionToken, select = "") => {
-  try {
-    let user = await UserModel.find({
-      "authentication.sessionToken": sessionToken,
-    })
-      .select(select)
-      .exec();
-
-    if (!user) {
-      user = await UserModel.find({
-        "google.id": sessionToken,
-      })
-        .select(select)
-        .exec();
-    }
-
-    return user;
+    return await UserModel.findOne({ email }).select(select).exec();
   } catch (error) {
     console.log(error);
   }
@@ -42,24 +18,21 @@ const getUserBySessionToken = async (sessionToken, select = "") => {
 
 const getUserById = async (id, select = "") => {
   try {
-    const user = await UserModel.findById(id).select(select).exec();
-    return user;
+    return await UserModel.findById(id).select(select).exec();
   } catch (error) {
     console.log(error);
   }
 };
 
 const createUser = (values) =>
-  new UserModel(values).save().then((user) => {
-    user.toObject();
-  });
-const deleteUserById = (id) => UserModel.findByIdAndDelete({ _id: id });
+  new UserModel(values).save().then((user) => user.toObject());
+
+const deleteUserById = (id) => UserModel.findByIdAndDelete(id);
 const updateUserById = (id, values) => UserModel.findByIdAndUpdate(id, values);
 
 module.exports = {
   getUsers,
   getUserByEmail,
-  getUserBySessionToken,
   getUserById,
   createUser,
   deleteUserById,

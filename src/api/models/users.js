@@ -2,11 +2,12 @@ const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema(
   {
-    username: { type: String, required: true },
-    email: { type: String, required: true },
+    firstName: { type: String, required: true },
+    lastName: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
     authentication: {
-      password: { type: String, required: false, select: false },
-      salt: { type: String, required: false, select: false },
+      password: { type: String, select: false },
+      salt: { type: String, select: false },
       sessionToken: { type: String, select: false },
     },
     google: {

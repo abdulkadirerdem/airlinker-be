@@ -1,109 +1,143 @@
-const { getUserByEmail, createUser } = require("../services/user-services");
-const { random, authentication, getSessionToken } = require("../helpers");
-const { getUserBySessionToken } = require("../services/user-services");
+const {
+  getUserByEmail,
+  createUser,
+  getUserById,
+} = require("../services/user-services");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      res.statusMessage = "Email and password is needed!";
-      return res.sendStatus(400);
+      return res
+        .status(400)
+        .json({ message: "Email and password are required!" });
     }
 
-    const user = await getUserByEmail(
-      email,
-      "+authentication.salt +authentication.password"
-    );
+    const user = await getUserByEmail(email, "+authentication.password");
 
     if (!user) {
-      res.statusMessage = "There is no user.!";
-      return res.sendStatus(400);
+      return res.status(400).json({ message: "No user found!" });
     }
 
-    const expectedHash = authentication(user.authentication.salt, password);
-
-    if (user.authentication.password !== expectedHash) {
-      res.statusMessage = "Password is not matching. Try Again!";
-      return res.sendStatus(403);
-    }
-    const salt = random();
-
-    user.authentication.sessionToken = authentication(
-      salt,
-      user._id.toString()
+    const isPasswordValid = await bcrypt.compare(
+      password,
+      user.authentication.password
     );
 
-    await user.save();
+    if (!isPasswordValid) {
+      return res.status(403).json({ message: "Invalid password!" });
+    }
 
-    res.cookie("COOKIE-KEY", user.authentication.sessionToken, {
-      httpOnly: false, // JavaScript ile okunamaz, XSS saldırılarına karşı korur
-      secure: process.env.NODE_ENV === "production", // Sadece HTTPS üzerinde gönderilir
-      maxAge: 24 * 60 * 60 * 1000, // Cookie ömrü (ms cinsinden)
-      sameSite: "strict", // CSRF saldırılarına karşı korur
+    const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "1h",
     });
 
-    res.statusMessage = "Login succesful!";
-    return res.status(200).json(user);
+    return res.status(200).json({ message: "Login successful!", accessToken });
   } catch (error) {
-    console.log(error);
-    return res.sendStatus(500);
+    console.error(error);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
 const register = async (req, res) => {
   try {
-    const { email, password, username } = req.body;
+    const { email, password, firstName, lastName } = req.body;
 
-    if (!email || !password || !username) {
-      res.statusMessage = "Email, password and user name is needed!";
-      return res.sendStatus(400);
+    // Alanların boş olup olmadığını kontrol et
+    if (!email || !password || !firstName || !lastName) {
+      return res.status(400).json({ message: "Missing fields!" });
     }
 
+    // Email formatını kontrol et
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      return res.status(400).json({ message: "Email format is invalid." });
+    }
+
+    // Şifre doğrulama (minimum 8 karakter, büyük ve küçük harf, rakam, özel karakter)
+    if (
+      !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(
+        password
+      )
+    ) {
+      return res.status(400).json({
+        message:
+          "Password must be at least 8 characters long and include a mix of uppercase, lowercase, numbers, and special characters.",
+      });
+    }
+
+    // İsim doğrulama (sadece harfler)
+    if (!/^[a-zA-Z]+$/.test(firstName) || !/^[a-zA-Z]+$/.test(lastName)) {
+      return res.status(400).json({
+        message: "First name and last name can only contain letters.",
+      });
+    }
+
+    // Kullanıcı var mı kontrol et
     const existingUser = await getUserByEmail(email);
-
     if (existingUser) {
-      res.statusMessage = "This user already created.";
-      return res.sendStatus(400);
+      return res.status(400).json({ message: "User already exists!" });
     }
 
-    const salt = random();
+    // Şifreyi hashle
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
+    // Yeni kullanıcıyı oluştur
     const user = await createUser({
       email,
-      username,
+      firstName,
+      lastName,
       authentication: {
-        salt,
-        password: authentication(salt, password),
+        password: hashedPassword,
       },
     });
 
-    res.statusMessage = "User succesfully created!";
-    return res.status(201).json(user);
+    // Token oluştur
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
+
+    // Cookie'ye token ekle
+    res.cookie("COOKIE-KEY", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 3600 * 1000, // 1 saat
+      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+    });
+
+    return res.status(201).json({
+      message: "User created successfully!",
+      user,
+      token, // Token'ı response ile döndür
+    });
   } catch (error) {
     console.error(error);
-    return res.sendStatus(500);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
 const me = async (req, res) => {
   try {
-    const sessionToken = await getSessionToken(req);
-
-    if (!sessionToken) {
-      return res.sendStatus(403);
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(403).json({ message: "No token provided!" });
     }
 
-    const user = await getUserBySessionToken(sessionToken);
+    const token = authHeader.split(" ")[1]; // "Bearer <token>" şeklinde olduğu varsayılarak
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await getUserById(decoded.id);
 
     if (!user) {
-      return res.sendStatus(403);
+      return res.status(403).json({ message: "User not found!" });
     }
 
-    res.status(200).json({ user: user[0] });
+    return res.status(200).json({ user });
   } catch (error) {
-    console.log("Error from me: ", error);
-    res.sendStatus(500);
+    console.log("Error in me: ", error);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
