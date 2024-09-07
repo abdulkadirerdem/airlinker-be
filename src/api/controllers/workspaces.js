@@ -19,7 +19,7 @@ const createWorkspace = async (req, res) => {
   try {
     const workspace = new WorkspaceModel({
       ...req.body,
-      user: user[0]._id,
+      user: user._id,
     });
     await workspace.save();
     res.status(201).json(workspace);
@@ -35,7 +35,6 @@ const getWorkspaces = async (req, res) => {
   }
   const jwtToken = authHeader.split(" ")[1];
   const decoded = jwt.verify(jwtToken, process.env.JWT_SECRET);
-
   const user = await getUserById(decoded.id);
 
   if (!user || user?.length === 0) {
@@ -44,7 +43,7 @@ const getWorkspaces = async (req, res) => {
 
   try {
     const workspaces = await WorkspaceModel.find({
-      user: user[0]._id,
+      user: user._id,
     }).populate("airlinks");
     res.status(200).json(workspaces);
   } catch (error) {

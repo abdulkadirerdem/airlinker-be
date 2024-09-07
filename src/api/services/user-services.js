@@ -18,7 +18,8 @@ const getUserByEmail = async (email, select = "") => {
 
 const getUserById = async (id, select = "") => {
   try {
-    return await UserModel.findById(id).select(select).exec();
+    const user = await UserModel.findById(id).select(select).exec();
+    return user;
   } catch (error) {
     console.log(error);
   }
