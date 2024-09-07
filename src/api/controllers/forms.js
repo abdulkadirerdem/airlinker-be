@@ -11,10 +11,14 @@ const createForm = async (req, res) => {
       return res.status(404).json({ message: "Airlink not found" });
     }
 
-    if (airlink.form) {
-      return res
-        .status(400)
-        .json({ message: "This Airlink already has a form." });
+    if (
+      airlink.form === null ||
+      airlink.quiz === null ||
+      airlink.raffle === null
+    ) {
+      return res.status(400).json({
+        message: "This Airlink already has a form or quiz or raffle.",
+      });
     }
 
     const form = new FormModel({

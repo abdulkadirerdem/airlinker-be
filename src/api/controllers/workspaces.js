@@ -1,8 +1,14 @@
-const { getSessionToken } = require("../helpers");
 const { WorkspaceModel } = require("../models/workspace");
-const { getUserBySessionToken } = require("../services/user-services");
+const jwt = require("jsonwebtoken");
+const { getUserById } = require("../services/user-services");
 
 const createWorkspace = async (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(403).json({ message: "No token provided!" });
+  }
+
+  const jwtToken = authHeader.split(" ")[1];
   const decoded = jwt.verify(jwtToken, process.env.JWT_SECRET);
   const user = await getUserById(decoded.id);
 
@@ -13,7 +19,7 @@ const createWorkspace = async (req, res) => {
   try {
     const workspace = new WorkspaceModel({
       ...req.body,
-      user: user[0]._id,
+      user: user._id,
     });
     await workspace.save();
     res.status(201).json(workspace);
@@ -23,6 +29,11 @@ const createWorkspace = async (req, res) => {
 };
 
 const getWorkspaces = async (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(403).json({ message: "No token provided!" });
+  }
+  const jwtToken = authHeader.split(" ")[1];
   const decoded = jwt.verify(jwtToken, process.env.JWT_SECRET);
   const user = await getUserById(decoded.id);
 
@@ -32,7 +43,7 @@ const getWorkspaces = async (req, res) => {
 
   try {
     const workspaces = await WorkspaceModel.find({
-      user: user[0]._id,
+      user: user._id,
     }).populate("airlinks");
     res.status(200).json(workspaces);
   } catch (error) {
