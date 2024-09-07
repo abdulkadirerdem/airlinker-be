@@ -29,7 +29,10 @@ const createAirlink = async (req, res) => {
 
 const getAirlinks = async (req, res) => {
   try {
-    const airlinks = await AirlinkModel.find().populate("form");
+    const airlinks = await AirlinkModel.find()
+      .populate("form")
+      .populate("quiz");
+
     res.status(200).json(airlinks);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -40,9 +43,10 @@ const getAirlinksByWorkstation = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const airlinks = await AirlinkModel.find({ workspace: id }).populate(
-      "form"
-    );
+    const airlinks = await AirlinkModel.find({ workspace: id })
+      .populate("form")
+      .populate("quiz");
+
     res.status(200).json(airlinks);
   } catch (error) {
     res.status(400).json({ error: error.message });

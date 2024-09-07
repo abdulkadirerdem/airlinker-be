@@ -32,7 +32,7 @@ const login = async (req, res) => {
     }
 
     const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
+      expiresIn: "36h",
     });
 
     return res.status(200).json({ message: "Login successful!", accessToken });
@@ -97,14 +97,14 @@ const register = async (req, res) => {
 
     // Token oluştur
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
+      expiresIn: "36h",
     });
 
     // Cookie'ye token ekle
     res.cookie("COOKIE-KEY", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      maxAge: 3600 * 1000, // 1 saat
+      maxAge: 3600 * 1000 * 36, // 36 saat
       sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
     });
 
