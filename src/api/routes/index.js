@@ -7,6 +7,7 @@ const workspaces = require("./workspaces");
 const airlinks = require("./airlinks");
 const forms = require("./forms");
 const quiz = require("./quiz");
+const raffle = require("./raffle");
 
 module.exports = () => {
   authentication(router);
@@ -16,5 +17,6 @@ module.exports = () => {
   airlinks(router);
   forms(router);
   quiz(router);
+  raffle(router);
   return router;
 };

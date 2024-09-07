@@ -31,7 +31,8 @@ const getAirlinks = async (req, res) => {
   try {
     const airlinks = await AirlinkModel.find()
       .populate("form")
-      .populate("quiz");
+      .populate("quiz")
+      .populate("raffle");
 
     res.status(200).json(airlinks);
   } catch (error) {
@@ -45,12 +46,44 @@ const getAirlinksByWorkstation = async (req, res) => {
   try {
     const airlinks = await AirlinkModel.find({ workspace: id })
       .populate("form")
-      .populate("quiz");
-
+      .populate("quiz")
+      .populate("raffle");
     res.status(200).json(airlinks);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 };
 
-module.exports = { createAirlink, getAirlinks, getAirlinksByWorkstation };
+const deleteAirlink = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const airlink = await AirlinkModel.findById(id);
+
+    if (!airlink) {
+      return res.status(404).json({ message: "Airlink not found" });
+    }
+
+    const workspace = await WorkspaceModel.findById(airlink.workspace);
+
+    if (workspace) {
+      workspace.airlinks = workspace.airlinks.filter(
+        (airlinkId) => airlinkId.toString() !== id
+      );
+      await workspace.save();
+    }
+
+    await AirlinkModel.findByIdAndDelete(id);
+
+    res.status(200).json({ message: "Airlink deleted successfully" });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+module.exports = {
+  createAirlink,
+  getAirlinks,
+  getAirlinksByWorkstation,
+  deleteAirlink,
+};

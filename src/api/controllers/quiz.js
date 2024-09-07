@@ -1,4 +1,3 @@
-// src/api/controllers/quiz.js
 const quizService = require("../services/quiz-services");
 const { AirlinkModel } = require("../models/airlink");
 
