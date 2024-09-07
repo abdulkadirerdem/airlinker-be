@@ -13,7 +13,11 @@ const createRaffle = async (req, res) => {
       return res.status(404).json({ message: "Airlink not found" });
     }
 
-    if (airlink.form || airlink.quiz || airlink.raffle) {
+    if (
+      airlink.form === null ||
+      airlink.quiz === null ||
+      airlink.raffle === null
+    ) {
       return res.status(400).json({
         message: "This Airlink already has a form, quiz, or raffle.",
       });
