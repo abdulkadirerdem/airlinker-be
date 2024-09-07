@@ -11,6 +11,7 @@ const AirlinkSchema = new mongoose.Schema(
     description: { type: String, required: true },
     form: { type: mongoose.Schema.Types.ObjectId, ref: "Form" },
     quiz: { type: mongoose.Schema.Types.ObjectId, ref: "Quiz" },
+    raffle: { type: mongoose.Schema.Types.ObjectId, ref: "Raffle" },
     workspace: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Workspace",
