@@ -8,7 +8,7 @@ const QuestionSchema = new mongoose.Schema({
     required: true,
   },
   options: [{ type: String }],
-  correctAnswer: { type: String, select: false },
+  correctAnswer: { type: mongoose.Schema.Types.Mixed, select: false, required: true },
 });
 
 const ResponseSchema = new mongoose.Schema({
