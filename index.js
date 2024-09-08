@@ -15,7 +15,11 @@ const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:8083",
+    origin: [
+      "http://localhost:8083",
+      "https://airlinker.vercel.app/",
+      "https://airlinker.vercel.app",
+    ],
     credentials: true,
   })
 );
