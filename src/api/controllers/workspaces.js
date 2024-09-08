@@ -1,6 +1,9 @@
 const { WorkspaceModel } = require("../models/workspace");
 const jwt = require("jsonwebtoken");
-const { getUserById } = require("../services/user-services");
+const {
+  getUserById,
+  getUserByWalletAddress,
+} = require("../services/user-services");
 
 const createWorkspace = async (req, res) => {
   const authHeader = req.headers.authorization;
@@ -10,7 +13,14 @@ const createWorkspace = async (req, res) => {
 
   const jwtToken = authHeader.split(" ")[1];
   const decoded = jwt.verify(jwtToken, process.env.JWT_SECRET);
-  const user = await getUserById(decoded.id);
+
+  let user;
+
+  if (decoded.publicKey && decoded.publicKey.length > 0) {
+    user = await getUserByWalletAddress(decoded.publicKey);
+  } else {
+    user = await getUserById(decoded.id);
+  }
 
   if (!user && user?.length > 0) {
     res.status(400).json({ error: error.message });
@@ -27,27 +37,33 @@ const createWorkspace = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
-
 const getWorkspaces = async (req, res) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
     return res.status(403).json({ message: "No token provided!" });
   }
+
   const jwtToken = authHeader.split(" ")[1];
   const decoded = jwt.verify(jwtToken, process.env.JWT_SECRET);
-  const user = await getUserById(decoded.id);
+  let user;
+
+  if (decoded.publicKey && decoded.publicKey.length > 0) {
+    user = await getUserByWalletAddress(decoded.publicKey);
+  } else {
+    user = await getUserById(decoded.id);
+  }
 
   if (!user || user?.length === 0) {
-    res.status(400).json({ error: "User not found!" });
+    return res.status(400).json({ error: "User not found!" }); // Added return
   }
 
   try {
     const workspaces = await WorkspaceModel.find({
       user: user._id,
     }).populate("airlinks");
-    res.status(200).json(workspaces);
+    return res.status(200).json(workspaces); // Added return
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    return res.status(400).json({ error: error.message }); // Added return
   }
 };
 

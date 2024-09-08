@@ -25,6 +25,14 @@ const getUserById = async (id, select = "") => {
   }
 };
 
+const getUserByWalletAddress = async (walletAddress, select = "") => {
+  try {
+    return await UserModel.findOne({ walletAddress }).select(select).exec();
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 const createUser = (values) =>
   new UserModel(values).save().then((user) => user.toObject());
 
@@ -38,4 +46,5 @@ module.exports = {
   createUser,
   deleteUserById,
   updateUserById,
+  getUserByWalletAddress,
 };
