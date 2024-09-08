@@ -2,12 +2,14 @@ const { RaffleModel } = require("../models/raffle");
 
 // Yeni raffle oluştur
 const createRaffle = async (raffleData) => {
-  const { title, description, participationInformation, airlink } = raffleData;
+  const { title, description, participationInformation, airlink, prizeAmount } =
+    raffleData;
   const raffle = new RaffleModel({
     title,
     description,
     participationInformation,
     airlink,
+    prizeAmount,
   });
   await raffle.save();
   return raffle;

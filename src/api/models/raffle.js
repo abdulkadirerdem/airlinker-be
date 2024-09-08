@@ -21,6 +21,7 @@ const RaffleSchema = new mongoose.Schema(
     participationInformation: [ParticipationInformationSchema],
     participants: [ParticipantResponseSchema],
     winner: { type: mongoose.Schema.Types.Mixed },
+    prizeAmount: { type: Number },
     airlink: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Airlink",
