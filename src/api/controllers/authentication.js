@@ -2,6 +2,7 @@ const {
   getUserByEmail,
   createUser,
   getUserById,
+  getUserByWalletAddress,
 } = require("../services/user-services");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -128,7 +129,12 @@ const me = async (req, res) => {
 
     const token = authHeader.split(" ")[1]; // "Bearer <token>" şeklinde olduğu varsayılarak
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await getUserById(decoded.id);
+    let user;
+    if (decoded.publicKey && decoded.publicKey.length > 0) {
+      user = await getUserByWalletAddress(decoded.publicKey);
+    } else {
+      user = await getUserById(decoded.id);
+    }
 
     if (!user) {
       return res.status(403).json({ message: "User not found!" });

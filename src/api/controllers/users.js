@@ -41,7 +41,13 @@ const updateUser = async (req, res) => {
       res.sendStatus(400);
     }
 
-    const user = await getUserById(id);
+    let user;
+
+    if (decoded.publicKey && decoded.publicKey.length > 0) {
+      user = await getUserByWalletAddress(decoded.publicKey);
+    } else {
+      user = await getUserById(decoded.id);
+    }
 
     user.username = username;
     await user.save();

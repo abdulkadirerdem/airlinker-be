@@ -1,7 +1,11 @@
 const { register, login, me } = require("../controllers/authentication");
 const passport = require("passport");
 const { authentication, random } = require("../helpers");
-const { updateUserById } = require("../services/user-services");
+const {
+  updateUserById,
+  createUser,
+  getUserByWalletAddress,
+} = require("../services/user-services");
 const nacl = require("tweetnacl");
 const bs58 = require("bs58");
 const jwt = require("jsonwebtoken");
@@ -17,7 +21,7 @@ module.exports = (router) => {
   });
 
   // İmzayı doğrula ve token oluştur
-  router.post("/wallet-login/verify", (req, res) => {
+  router.post("/wallet-login/verify", async (req, res) => {
     const { publicKey, signature, message } = req.body;
 
     // signature ve publicKey'in string ve base64 olduğundan emin olun
@@ -39,10 +43,28 @@ module.exports = (router) => {
       );
 
       if (isValid) {
-        const token = jwt.sign({ publicKey }, "secret-key", {
-          expiresIn: "1h",
+        const token = jwt.sign({ publicKey }, process.env.JWT_SECRET, {
+          expiresIn: "36h",
         });
-        res.json({ token });
+
+        const currentUser = await getUserByWalletAddress(publicKey);
+
+        if (!currentUser) {
+          const user = await createUser({
+            walletAddress: publicKey,
+          });
+
+          return res.status(201).json({
+            message: "User created successfully!",
+            user,
+            token,
+          });
+        }
+        return res.status(201).json({
+          message: "User logged in successfully!",
+          user: currentUser,
+          token,
+        });
       } else {
         res.status(401).json({ message: "İmza doğrulama başarısız." });
       }
