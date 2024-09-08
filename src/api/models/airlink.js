@@ -12,6 +12,7 @@ const AirlinkSchema = new mongoose.Schema(
     form: { type: mongoose.Schema.Types.ObjectId, ref: "Form" },
     quiz: { type: mongoose.Schema.Types.ObjectId, ref: "Quiz" },
     raffle: { type: mongoose.Schema.Types.ObjectId, ref: "Raffle" },
+    whiteList: [{ type: String }],
     workspace: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Workspace",
