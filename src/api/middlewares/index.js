@@ -1,5 +1,5 @@
 const { get, merge } = require("lodash");
-const { getUserById } = require("../services/user-services");
+const { getUserById, getUserByWalletAddress } = require("../services/user-services");
 const jwt = require("jsonwebtoken");
 
 const isOwner = (req, res, next) => {
@@ -39,7 +39,12 @@ const isAuthenticated = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(jwtToken, process.env.JWT_SECRET);
-    const existingUser = await getUserById(decoded.id);
+    let existingUser;
+    if (decoded.publicKey && decoded.publicKey.length > 0) {
+      existingUser = await getUserByWalletAddress(decoded.publicKey);
+    } else {
+      existingUser = await getUserById(decoded.id);
+    }
 
     if (!existingUser) {
       res.status(403).json({ message: "User not found!" });
